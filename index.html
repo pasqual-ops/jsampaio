@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz do Jorge 😄</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.box {
+  width: 90%;
+  max-width: 520px;
+  background: #1c1c1c;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: scale(0.95);}
+  to {opacity: 1; transform: scale(1);}
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+.opcao {
+  background: #2b2b2b;
+  color: white;
+}
+
+.opcao:hover {
+  background: #3a3a3a;
+}
+
+.opcao.selecionada {
+  background: #0984e3;
+}
+
+.correta {
+  background: #00b894 !important;
+}
+
+.errada {
+  background: #d63031 !important;
+}
+
+.btn {
+  background: #00b894;
+  color: white;
+  font-weight: bold;
+}
+
+.btn:hover {
+  background: #00a383;
+}
+
+#res {
+  margin-top: 10px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+
+<div id="inicio">
+<h2>Quiz do Jorge 😄</h2>
+<input id="nome" placeholder="Seu nome" style="width:100%;padding:10px;border-radius:10px;border:none;box-sizing:border-box;">
+<input id="escola" placeholder="Sua escola" style="width:100%;padding:10px;border-radius:10px;border:none;margin-top:5px;box-sizing:border-box;">
+<button class="btn" onclick="start()">Começar</button>
+</div>
+
+<div id="quiz" style="display:none;">
+<div id="placar"></div>
+<div id="pergunta" style="font-size: 18px; font-weight: bold; margin: 15px 0;"></div>
+<div id="opcoes"></div>
+<button id="confirmar" class="btn" onclick="check()" disabled>Confirmar</button>
+<button id="proxima" class="btn" onclick="next()" style="display:none;">Próxima</button>
+<div id="res"></div>
+</div>
+
+<div id="fim" style="display:none;">
+<h2>Resultado</h2>
+
+<div id="final"></div>
+
+<h3>🏆 Ranking</h3>
+<div id="ranking"></div>
+
+<button class="btn" onclick="restart()">Jogar de novo</button>
+</div>
+
+</div>
+
+<script>
+
+// 📚 195 PERGUNTAS
+const perguntas = [
+{p:"2x + 6 = 14",o:["2","3","4","5"],c:2},
+{p:"x² = 49",o:["5","6","7","8"],c:2},
+{p:"30% de 200?",o:["40","50","60","70"],c:2},
+{p:"3² + 4²?",o:["25","12","7","20"],c:0},
+{p:"f(x)=2x, f(5)?",o:["5","10","15","20"],c:1},
+{p:"MMC de 4 e 6?",o:["10","12","24","6"],c:1},
+{p:"√121?",o:["10","11","12","13"],c:1},
+{p:"2x² com x=3?",o:["12","18","9","6"],c:1},
+{p:"10% de 150?",o:["10","15","20","25"],c:1},
+{p:"5²?",o:["10","20","25","30"],c:2},
+{p:"Qual é o valor de x na equação 2x + 8 = 20?",o:["4","5","6","8"],c:2},
+{p:"Qual é a raiz quadrada de 225?",o:["10","12","15","20"],c:2},
+{p:"Quanto é 25% de 400?",o:["50","75","100","125"],c:2},
+{p:"Resolva: x² = 64",o:["6","7","8","9"],c:2},
+{p:"Quanto é 7 × 8?",o:["54","56","58","60"],c:1},
+{p:"Qual é o MMC de 8 e 12?",o:["16","20","24","36"],c:2},
+{p:"Qual é o MDC de 18 e 24?",o:["3","6","9","12"],c:1},
+{p:"Quanto é 3³?",o:["9","18","27","81"],c:2},
+{p:"Qual é o valor de √144?",o:["10","11","12","14"],c:2},
+{p:"Quanto é 15% de 200?",o:["20","30","40","50"],c:1},
+{p:"Um triângulo possui quantos lados?",o:["2","3","4","5"],c:1},
+{p:"A soma dos ângulos internos de um triângulo é:",o:["90°","180°","270°","360°"],c:1},
+{p:"Qual é a área de um quadrado de lado 5 cm?",o:["10 cm²","20 cm²","25 cm²","30 cm²"],c:2},
+{p:"Qual é o perímetro de um quadrado de lado 6 cm?",o:["12 cm","18 cm","24 cm","36 cm"],c:2},
+{p:"Quanto é 2⁵?",o:["10","16","32","64"],c:2},
+{p:"Qual é o resultado de 100 ÷ 4?",o:["20","25","30","40"],c:1},
+{p:"Se f(x)=3x, qual é f(4)?",o:["7","10","12","15"],c:2},
+{p:"Qual é a fração equivalente a 1/2?",o:["2/3","2/4","3/5","4/5"],c:1},
+{p:"Quanto é 5% de 300?",o:["10","15","20","25"],c:1},
+{p:"Qual é o valor de π aproximadamente?",o:["2,14","3,14","4,14","5,14"],c:1},
+{p:"Um ângulo de 90° é chamado de:",o:["Agudo","Reto","Obtuso","Raso"],c:1},
+{p:"Qual é a média de 10, 20 e 30?",o:["15","20","25","30"],c:1},
+{p:"Resolva: 3x = 21",o:["5","6","7","8"],c:2},
+{p:"Qual é o sucessor de 999?",o:["998","999","1000","1001"],c:2},
+{p:"Quanto é 12²?",o:["124","144","154","164"],c:1},
+{p:"Qual é o valor de 9 × 9?",o:["72","81","90","99"],c:1},
+{p:"Um círculo possui quantos lados?",o:["1","2","Nenhum","Infinitos lados"],c:2},
+{p:"Qual é a porcentagem equivalente a 0,5?",o:["5%","50%","75%","100%"],c:1},
+{p:"Quanto é 1/4 de 100?",o:["20","25","30","40"],c:1},
+{p:"Qual é o resultado de 50 + 25 × 2?",o:["100","150","75","200"],c:0},
+
+/* QUÍMICA */
+{p:"Qual é o símbolo químico do oxigênio?",o:["O","Ox","Og","O2"],c:0},
+{p:"Qual é o símbolo químico do hidrogênio?",o:["H","He","Hg","Hy"],c:0},
+{p:"Qual é o elemento químico representado por Fe?",o:["Flúor","Ferro","Fósforo","Frâncio"],c:1},
+{p:"Qual é o número atômico do carbono?",o:["4","6","8","12"],c:1},
+{p:"A água é formada por quais elementos?",o:["Hélio e oxigênio","Hidrogênio e oxigênio","Carbono e oxigênio","Nitrogênio e hidrogênio"],c:1},
+{p:"Qual é a fórmula química da água?",o:["CO2","H2O","O2","NaCl"],c:1},
+{p:"O sal de cozinha é conhecido como:",o:["HCl","NaCl","CO2","CaO"],c:1},
+{p:"Qual é o gás que os seres humanos respiram?",o:["Oxigênio","Hidrogênio","Nitrogênio puro","Cloro"],c:0},
+{p:"Qual é a partícula do átomo com carga negativa?",o:["Próton","Nêutron","Elétron","Núcleo"],c:2},
+{p:"Qual partícula possui carga positiva?",o:["Elétron","Próton","Nêutron","Íon"],c:1},
+{p:"Qual partícula não possui carga elétrica?",o:["Próton","Elétron","Nêutron","Molécula"],c:2},
+{p:"A tabela periódica organiza:",o:["Animais","Elementos químicos","Planetas","Números"],c:1},
+{p:"Qual é o símbolo do sódio?",o:["So","S","Na","Sd"],c:2},
+{p:"Qual é o símbolo do ouro?",o:["Au","Ag","Or","O"],c:0},
+{p:"Qual é o símbolo da prata?",o:["Pt","Ag","Au","Pr"],c:1},
+{p:"O pH 7 representa uma solução:",o:["Ácida","Básica","Neutra","Metálica"],c:2},
+{p:"Uma substância com pH menor que 7 é:",o:["Ácida","Neutra","Básica","Salgada"],c:0},
+{p:"Uma substância com pH maior que 7 é:",o:["Ácida","Básica","Neutra","Gasosa"],c:1},
+{p:"O CO2 é conhecido como:",o:["Oxigênio","Dióxido de carbono","Monóxido de carbono","Metano"],c:1},
+{p:"Qual é o estado físico do gelo?",o:["Líquido","Gasoso","Sólido","Plasma"],c:2},
+{p:"A passagem do sólido para líquido chama-se:",o:["Evaporação","Fusão","Condensação","Solidificação"],c:1},
+{p:"A passagem do líquido para gás chama-se:",o:["Fusão","Evaporação","Sublimação","Solidificação"],c:1},
+{p:"A passagem do gás para líquido chama-se:",o:["Condensação","Fusão","Evaporação","Combustão"],c:0},
+{p:"Qual elemento é essencial para a respiração?",o:["Oxigênio","Ouro","Ferro","Cobre"],c:0},
+{p:"Qual é a fórmula do gás carbônico?",o:["CO","CO2","C2O","O3"],c:1},
+{p:"O átomo é formado principalmente por:",o:["Células","Prótons, nêutrons e elétrons","Tecidos","Moléculas apenas"],c:1},
+{p:"A menor unidade de um elemento químico é:",o:["Célula","Átomo","Molécula","Mistura"],c:1},
+{p:"Uma mistura homogênea apresenta:",o:["Uma única fase visível","Duas fases","Três fases","Nenhuma fase"],c:0},
+{p:"O oxigênio pertence ao grupo dos:",o:["Metais alcalinos","Calcogênios","Gases nobres","Halogênios"],c:1},
+{p:"Qual desses é um gás nobre?",o:["Oxigênio","Hélio","Carbono","Sódio"],c:1},
+
+/* PORTUGUÊS */
+{p:"Qual é o sujeito da frase 'Maria estudou para a prova'?",o:["Estudou","Para a prova","Maria","Prova"],c:2},
+{p:"Qual é o verbo na frase 'João corre todos os dias'?",o:["João","Corre","Todos","Dias"],c:1},
+{p:"Qual palavra é um substantivo?",o:["Bonito","Correr","Casa","Rapidamente"],c:2},
+{p:"Qual palavra é um adjetivo?",o:["Casa","Bonito","Correr","Ontem"],c:1},
+{p:"Qual palavra é um advérbio?",o:["Rapidamente","Mesa","Azul","Aluno"],c:0},
+{p:"O plural de 'cidadão' é:",o:["Cidadões","Cidadãos","Cidadães","Cidadans"],c:1},
+{p:"O plural de 'pão' é:",o:["Pãos","Pães","Pãezes","Pões"],c:1},
+{p:"O antônimo de 'feliz' é:",o:["Alegre","Triste","Contente","Animado"],c:1},
+{p:"O sinônimo de 'rápido' é:",o:["Lento","Ágil","Fraco","Pesado"],c:1},
+{p:"Qual frase está escrita corretamente?",o:["Eu vou estudar.","Eu vô estudar.","Eu vo estudar.","Eu vou estuda."],c:0},
+{p:"Qual é um verbo?",o:["Mesa","Correr","Azul","Feliz"],c:1},
+{p:"Qual é um pronome pessoal?",o:["Eu","Casa","Grande","Ontem"],c:0},
+{p:"A palavra 'meninos' está no:",o:["Singular","Plural","Futuro","Passado"],c:1},
+{p:"Qual é o feminino de 'ator'?",o:["Atriz","Atora","Atores","Atorae"],c:0},
+{p:"Qual é o aumentativo de 'casa'?",o:["Casinha","Casarão","Casita","Casebre"],c:1},
+{p:"Qual é o diminutivo de 'flor'?",o:["Florzinha","Florão","Florada","Floresta"],c:0},
+{p:"A palavra 'porque' usada em explicações indica:",o:["Causa","Lugar","Tempo","Pessoa"],c:0},
+{p:"Qual palavra está escrita corretamente?",o:["Excessão","Exceção","Esessão","Eceção"],c:1},
+{p:"Qual é o gênero textual que conta uma história?",o:["Notícia","Narrativa","Receita","Lista"],c:1},
+{p:"Uma poesia é formada principalmente por:",o:["Versos","Números","Tabelas","Mapas"],c:0},
+{p:"Qual é a função da vírgula?",o:["Separar elementos e organizar frases","Terminar sempre frases","Substituir letras","Mudar palavras"],c:0},
+{p:"Qual sinal indica uma pergunta?",o:["!","?",";",":"],c:1},
+{p:"Qual sinal indica uma pausa maior que a vírgula?",o:["Ponto e vírgula","Ponto final","Interrogação","Aspas"],c:0},
+{p:"A palavra 'amor' é um:",o:["Substantivo","Verbo","Adjetivo","Advérbio"],c:0},
+{p:"Na frase 'O cachorro grande latiu', a palavra 'grande' é:",o:["Verbo","Substantivo","Adjetivo","Pronome"],c:2},
+{p:"Qual é o tempo verbal de 'eu estudarei'?",o:["Presente","Passado","Futuro","Infinitivo"],c:2},
+{p:"Qual é o tempo verbal de 'eu estudei'?",o:["Presente","Passado","Futuro","Imperativo"],c:1},
+{p:"Qual palavra é uma preposição?",o:["De","Casa","Correr","Bonito"],c:0},
+{p:"Qual palavra é uma conjunção?",o:["E","Mesa","Azul","Correr"],c:0},
+{p:"A linguagem usada em situações formais é chamada de:",o:["Informal","Formal","Gíria","Regional"],c:1},
+{p:"Sujeito de 'João corre'",o:["João","corre","corre João","nenhum"],c:0},
+{p:"Predicado?",o:["João","corre","João corre","nenhum"],c:1},
+{p:"Frase correta?",o:["Eu vô","Eu vou","Eu vo","Eu vouu"],c:1},
+{p:"Advérbio?",o:["Casa","Bonito","Rapidamente","Correr"],c:2},
+{p:"Plural de cidadão?",o:["Cidadões","Cidadãos","Cidadães","Cidadans"],c:1},
+{p:"Verbo?",o:["Mesa","Correr","Azul","Rápido"],c:1},
+{p:"Antônimo de feliz?",o:["Alegre","Radiante","Triste","Contente"],c:2},
+{p:"Adjetivo?",o:["Bonito","Correr","Ontem","Ali"],c:0},
+{p:"Sinônimo de rápido?",o:["Lento","Ágil","Pesado","Grande"],c:1},
+{p:"Plural de pão?",o:["Pãos","Pães","Pãeses","Pões"],c:1},
+
+{p:"Se gosta de programar indica:",o:["Habilidade","Medo","Raiva","Erro"],c:0},
+{p:"Quem gosta de desafios é:",o:["Desmotivado","Curioso","Cansado","Perdido"],c:1},
+{p:"Compartilhar indica:",o:["Isolamento","Socialização","Medo","Erro"],c:1},
+{p:"Quem resolve problemas é:",o:["Passivo","Proativo","Lento","Desligado"],c:1},
+{p:"Quem aprende rápido é:",o:["Desatento","Ágil","Lento","Fraco"],c:1},
+{p:"Quem ajuda os outros é:",o:["Egoísta","Solidário","Fraco","Lento"],c:1},
+{p:"Quem estuda sempre é:",o:["Preguiçoso","Dedicado","Perdido","Fraco"],c:1},
+{p:"Quem erra e tenta de novo é:",o:["Fraco","Persistente","Desmotivado","Lento"],c:1},
+
+/* FÍSICA */
+{p:"Qual é a unidade de medida da força no Sistema Internacional?",o:["Joule","Newton","Watt","Pascal"],c:1},
+{p:"A fórmula da velocidade média é:",o:["massa/tempo","distância/tempo","força × massa","tempo/distância"],c:1},
+{p:"A unidade de velocidade no SI é:",o:["m/s","kg","N","J"],c:0},
+{p:"A aceleração mede:",o:["Mudança da velocidade","Quantidade de massa","Temperatura","Energia elétrica"],c:0},
+{p:"A primeira Lei de Newton é conhecida como Lei da:",o:["Ação e reação","Inércia","Gravidade","Energia"],c:1},
+{p:"A fórmula da força é:",o:["F=m×a","F=m/a","F=v×t","F=d/t"],c:0},
+{p:"A unidade de massa no SI é:",o:["Metro","Segundo","Quilograma","Newton"],c:2},
+{p:"A energia associada ao movimento é chamada de:",o:["Potencial","Cinética","Térmica","Química"],c:1},
+{p:"A energia armazenada pela posição de um corpo é:",o:["Cinética","Potencial","Elétrica","Sonora"],c:1},
+{p:"A gravidade da Terra é aproximadamente:",o:["5 m/s²","9,8 m/s²","15 m/s²","20 m/s²"],c:1},
+{p:"Qual é a unidade de energia?",o:["Newton","Joule","Watt","Metro"],c:1},
+{p:"Qual é a unidade de potência?",o:["Watt","Joule","Newton","Pascal"],c:0},
+{p:"A luz se propaga mais rapidamente no:",o:["Vácuo","Água","Vidro","Metal"],c:0},
+{p:"O som precisa de um meio para se propagar?",o:["Sim","Não","Somente no vácuo","Somente no espaço"],c:0},
+{p:"A temperatura é medida geralmente em:",o:["Metro","Grau Celsius","Quilograma","Newton"],c:1},
+{p:"O calor é uma forma de:",o:["Energia","Massa","Força","Matéria"],c:0},
+{p:"Um corpo parado possui velocidade:",o:["Alta","Zero","Negativa","Infinita"],c:1},
+{p:"A densidade é calculada por:",o:["Massa/volume","Volume/massa","Força×tempo","Distância/tempo"],c:0},
+{p:"A pressão é medida em:",o:["Pascal","Joule","Watt","Newton"],c:0},
+{p:"A eletricidade está relacionada ao movimento de:",o:["Prótons apenas","Elétrons","Nêutrons","Moléculas"],c:1},
+{p:"A corrente elétrica é medida em:",o:["Ampère","Volt","Watt","Joule"],c:0},
+{p:"A tensão elétrica é medida em:",o:["Volt","Newton","Pascal","Metro"],c:0},
+{p:"A resistência elétrica é medida em:",o:["Ohm","Watt","Joule","Ampère"],c:0},
+{p:"A fórmula da potência elétrica é:",o:["P=U×i","P=m×a","P=d/t","P=m/v"],c:0},
+{p:"Um espelho plano forma uma imagem:",o:["Real e invertida","Virtual e direita","Maior sempre","Sem imagem"],c:1},
+{p:"A reflexão da luz acontece quando a luz:",o:["É absorvida","Volta ao meio de origem","Desaparece","Fica mais lenta"],c:1},
+{p:"A refração ocorre quando a luz:",o:["Muda de meio","Para de existir","Vira som","Aumenta a massa"],c:0},
+{p:"A unidade de tempo no SI é:",o:["Hora","Minuto","Segundo","Dia"],c:2},
+{p:"O movimento com velocidade constante é chamado de:",o:["Movimento uniforme","Movimento acelerado","Repouso","Queda livre"],c:0},
+{p:"A força que atrai os corpos para a Terra é:",o:["Elétrica","Magnética","Gravitacional","Normal"],c:2},
+{p:"Unidade de força?",o:["Joule","Newton","Watt","Pascal"],c:1},
+{p:"F = ?",o:["m.a","v.t","d/t","m/v"],c:0},
+{p:"Velocidade média?",o:["Distância/tempo","Tempo/distância","Massa×tempo","Nada"],c:0},
+{p:"Corpo parado?",o:["Zero","Alta","Baixa","Infinita"],c:0},
+{p:"Energia movimento?",o:["Potencial","Cinética","Elétrica","Térmica"],c:1},
+{p:"Gravidade?",o:["10","9,8","8","12"],c:1},
+{p:"Unidade energia?",o:["Newton","Joule","Pascal","Metro"],c:1},
+{p:"Tempo é medido em?",o:["Metro","Segundo","Quilo","Litro"],c:1},
+
+/* GEOGRAFIA */
+{p:"Qual é a capital do Brasil?",o:["São Paulo","Rio de Janeiro","Brasília","Salvador"],c:2},
+{p:"O maior continente do mundo é:",o:["África","América","Ásia","Europa"],c:2},
+{p:"O maior oceano do planeta é:",o:["Atlântico","Índico","Pacífico","Ártico"],c:2},
+{p:"O Brasil está localizado em qual continente?",o:["Europa","América do Sul","África","Ásia"],c:1},
+{p:"Qual é o maior país da América do Sul?",o:["Argentina","Brasil","Chile","Peru"],c:1},
+{p:"Qual é a capital de Mato Grosso?",o:["Campo Grande","Cuiabá","Goiânia","Brasília"],c:1},
+{p:"O clima predominante na região Norte do Brasil é:",o:["Desértico","Equatorial","Polar","Mediterrâneo"],c:1},
+{p:"A Floresta Amazônica está localizada principalmente:",o:["No Norte do Brasil","No Sul do Brasil","No Nordeste","No Centro-Oeste"],c:0},
+{p:"O movimento da Terra responsável pelo dia e noite é:",o:["Translação","Rotação","Inclinação","Gravidade"],c:1},
+{p:"O movimento da Terra ao redor do Sol chama-se:",o:["Rotação","Translação","Revolução lunar","Erosão"],c:1},
+{p:"O paralelo principal da Terra é chamado de:",o:["Meridiano de Greenwich","Linha do Equador","Trópico de Capricórnio","Círculo Polar"],c:1},
+{p:"O Brasil possui quantos estados?",o:["24","25","26","30"],c:2},
+{p:"Qual é a região brasileira com maior população?",o:["Norte","Nordeste","Sudeste","Centro-Oeste"],c:2},
+{p:"O relevo formado por áreas elevadas e irregulares é chamado de:",o:["Planície","Planalto","Depressão","Ilha"],c:1},
+{p:"O conjunto de elementos como temperatura e chuva forma o:",o:["Clima","Relevo","Solo","Fuso horário"],c:0},
+{p:"O bioma característico do Nordeste brasileiro é:",o:["Caatinga","Pampa","Amazônia","Pantanal"],c:0},
+{p:"O Pantanal é conhecido por ser uma grande área de:",o:["Deserto","Vegetação congelada","Planície alagável","Montanha"],c:2},
+{p:"A maior cordilheira do mundo é:",o:["Alpes","Himalaia","Andes","Montanhas Rochosas"],c:1},
+{p:"O continente conhecido como 'continente gelado' é:",o:["África","Antártida","Ásia","Europa"],c:1},
+{p:"O desmatamento causa principalmente:",o:["Aumento das florestas","Perda de biodiversidade","Mais chuvas sempre","Redução da poluição"],c:1},
+{p:"A camada de gases que envolve a Terra é:",o:["Litosfera","Atmosfera","Hidrosfera","Biosfera"],c:1},
+{p:"A água presente nos oceanos faz parte da:",o:["Atmosfera","Hidrosfera","Litosfera","Biosfera"],c:1},
+{p:"A camada sólida da Terra é chamada de:",o:["Atmosfera","Hidrosfera","Litosfera","Estratosfera"],c:2},
+{p:"A latitude é medida a partir:",o:["Linha do Equador","Polo Norte apenas","Greenwich","Oceanos"],c:0},
+{p:"O meridiano de Greenwich divide a Terra em:",o:["Norte e Sul","Leste e Oeste","Frio e quente","Terra e água"],c:1},
+{p:"A globalização aumentou principalmente:",o:["O isolamento dos países","A conexão entre países","O fim da tecnologia","A redução do comércio"],c:1},
+{p:"A urbanização é o crescimento das:",o:["Florestas","Cidades","Montanhas","Oceanos"],c:1},
+{p:"A migração é o deslocamento de:",o:["Animais apenas","Pessoas de um lugar para outro","Rios","Montanhas"],c:1},
+{p:"A principal fonte de energia renovável é:",o:["Carvão","Petróleo","Solar","Gás natural"],c:2},
+{p:"O petróleo é uma fonte de energia:",o:["Renovável","Não renovável","Infinita","Natural renovável"],c:1}
+];
+
+let i=0, pontos=0, resp=null, nome="", escola="";
+
+function gerarNome(){
+  return "Player_" + Math.floor(Math.random()*10000);
+}
+
+function embaralhar(array){
+  return array.sort(()=>Math.random()-0.5);
+}
+
+function start(){
+  nome = document.getElementById("nome").value || gerarNome();
+  escola = document.getElementById("escola").value || "Desconhecida";
+
+  // embaralha as perguntas
+  perguntas.sort(()=>Math.random()-0.5);
+
+  // embaralha as alternativas
+  perguntas.forEach(p=>{
+    let resposta = p.o[p.c];
+    p.o = embaralhar(p.o);
+    p.c = p.o.indexOf(resposta);
+  });
+
+  document.getElementById("inicio").style.display="none";
+  document.getElementById("quiz").style.display="block";
+
+  show();
+}
+
+function show(){
+  resp=null;
+  document.getElementById("confirmar").disabled=true;
+  document.getElementById("confirmar").style.display="block";
+  document.getElementById("proxima").style.display="none";
+  document.getElementById("res").innerText="";
+
+  let p=perguntas[i];
+  document.getElementById("placar").innerText=`${i+1}/${perguntas.length} | ${pontos} pontos`;
+
+  let op=document.getElementById("opcoes");
+  document.getElementById("pergunta").innerText=p.p;
+  op.innerHTML="";
+
+  p.o.forEach((e,idx)=>{
+    let b=document.createElement("button");
+    b.className="opcao";
+    b.innerText=e;
+
+    b.onclick=()=>{
+      resp=idx;
+      document.querySelectorAll(".opcao").forEach(btn=>{
+        btn.classList.remove("selecionada");
+      });
+      b.classList.add("selecionada");
+      document.getElementById("confirmar").disabled=false;
+    }
+    op.appendChild(b);
+  });
+}
+
+function check(){
+  let botoes = document.querySelectorAll(".opcao");
+
+  botoes.forEach((btn, idx)=>{
+    if(idx == perguntas[i].c){
+      btn.classList.add("correta");
+    } else if(idx == resp){
+      btn.classList.add("errada");
+    }
+  });
+
+  if(resp==perguntas[i].c){
+    pontos++;
+    document.getElementById("res").innerText="Acertou 😄";
+  }else{
+    document.getElementById("res").innerText="Errou 😅";
+  }
+
+  document.getElementById("confirmar").style.display="none";
+  document.getElementById("proxima").style.display="block";
+}
+
+function next(){
+  i++;
+  if(i<perguntas.length){
+    show();
+  }else{
+    fim();
+  }
+}
+
+function fim(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("fim").style.display="block";
+
+  let total = perguntas.length;
+  let porcentagem = Math.round((pontos / total) * 100);
+
+  document.getElementById("final").innerHTML =
+  `
+  ${nome}, você fez <b>${pontos}</b> pontos de ${total}!<br><br>
+  📊 Você acertou <b>${porcentagem}%</b> das perguntas.
+  `;
+
+  salvarRanking();
+  mostrarRanking();
+}
+
+function salvarRanking(){
+  let ranking = JSON.parse(localStorage.getItem("rankingQuiz")) || [];
+
+  ranking.push({
+    nome: nome,
+    escola: escola,
+    pontos: pontos
+  });
+
+  ranking.sort((a,b)=> b.pontos - a.pontos);
+  ranking = ranking.slice(0,10);
+
+  localStorage.setItem("rankingQuiz", JSON.stringify(ranking));
+}
+
+function mostrarRanking(){
+  let ranking = JSON.parse(localStorage.getItem("rankingQuiz")) || [];
+  let texto="";
+
+  ranking.forEach((j,index)=>{
+    texto += `
+    ${index+1}º 🏆 ${j.nome}
+    <br>
+    🏫 ${j.escola} | ⭐ ${j.pontos} pontos
+    <br><br>
+    `;
+  });
+
+  document.getElementById("ranking").innerHTML = texto;
+}
+
+function restart(){
+  i=0;
+  pontos=0;
+  document.getElementById("fim").style.display="none";
+  document.getElementById("inicio").style.display="block";
+  document.getElementById("nome").value = "";
+  document.getElementById("escola").value = "";
+}
+
+</script>
+</body>
+</html>
