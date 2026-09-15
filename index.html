@@ -88,7 +88,7 @@ button {
 <h2>Quiz de estudos</h2>
 <input id="nome" placeholder="Seu nome" style="width:100%;padding:10px;border-radius:10px;border:none;box-sizing:border-box;">
 <input id="escola" placeholder="Sua escola" style="width:100%;padding:10px;border-radius:10px;border:none;margin-top:5px;box-sizing:border-box;">
-<button class="btn" onclick="start()">Começar</button>
+<button id="btnComecar" class="btn" onclick="start()" disabled style="opacity: 0.6; cursor: not-allowed;">Começar</button>
 </div>
 
 <div id="quiz" style="display:none;">
@@ -115,7 +115,7 @@ button {
 
 <script>
 
-// 📚 195 PERGUNTAS
+// 📚 195 PERGUNTAS COMPLETAS
 const perguntas = [
 {p:"2x + 6 = 14",o:["2","3","4","5"],c:2},
 {p:"x² = 49",o:["5","6","7","8"],c:2},
@@ -328,10 +328,8 @@ function start(){
   nome = document.getElementById("nome").value || gerarNome();
   escola = document.getElementById("escola").value || "Desconhecida";
 
-  // embaralha as perguntas
   perguntas.sort(()=>Math.random()-0.5);
 
-  // embaralha as alternativas
   perguntas.forEach(p=>{
     let resposta = p.o[p.c];
     p.o = embaralhar(p.o);
@@ -461,7 +459,31 @@ function restart(){
   document.getElementById("inicio").style.display="block";
   document.getElementById("nome").value = "";
   document.getElementById("escola").value = "";
+
+  btnComecar.disabled = true;
+  btnComecar.style.opacity = "0.6";
+  btnComecar.style.cursor = "not-allowed";
 }
+
+// VALIDAÇÃO DOS CAMPOS DE ENTRADA
+const inputNome = document.getElementById("nome");
+const inputEscola = document.getElementById("escola");
+const btnComecar = document.getElementById("btnComecar");
+
+function validarFormulario() {
+    if (inputNome.value.trim() !== "" && inputEscola.value.trim() !== "") {
+        btnComecar.disabled = false;
+        btnComecar.style.opacity = "1";
+        btnComecar.style.cursor = "pointer";
+    } else {
+        btnComecar.disabled = true;
+        btnComecar.style.opacity = "0.6";
+        btnComecar.style.cursor = "not-allowed";
+    }
+}
+
+inputNome.addEventListener("input", validarFormulario);
+inputEscola.addEventListener("input", validarFormulario);
 
 </script>
 </body>
